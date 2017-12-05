@@ -1,0 +1,105 @@
+{% extends 'backendIndex.html' %}
+{% block manageCon %}
+    {#    /blog/backend/addArticle/#}
+    <form action="" class="form-horizontal" method="post" novalidate>
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="id_title" class="col-sm-1 control-label">标题:</label>
+            <div class="col-md-5">{{ article_form.title }}
+                <span></span></div>
+        </div>
+        <span>{{ article_form.title.errors }}</span>
+        <div class="form-group">
+            <label for="id_content" class="col-sm-1 control-label">内容:</label>
+            <div class="col-md-7">{{ article_form.content }}<span></span></div>
+        </div>
+
+        <div class="form-group">
+            <label for="id_category" class="col-sm-1 control-label">分类:</label>
+            <div class="col-md-7">
+                <select class="form-control">
+                    {% for category in article_form.category_id   %}
+                        {{ category }}
+                    {% endfor %}
+                </select><span></span>
+            </div>
+        </div>
+
+    <div class="form-group">
+            <label for="id_tag" class="col-sm-1 control-label">标签:</label>
+            <div class="col-md-7">
+                <select multiple class="form-control">
+                    {% for tag in article_form.tag_id   %}
+                        {{ tag }}
+                    {% endfor %}
+                </select><span></span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <input type="button" id="btn" class="btn btn-danger col-md-offset-4" value="submit">
+        </div>
+
+
+    </form>
+    <script>
+        KindEditor.ready(function (K) {
+            window.editor = K.create("#id_content", {
+                width: "600px",
+                height: "500px",
+                resizeType: 0,
+                items: [
+                    'source', '|', 'undo', 'redo', '|', 'preview', 'print', 'template', 'code', 'cut', 'copy', 'paste',
+                    'plainpaste', 'wordpaste', '|', 'justifyleft', 'justifycenter', 'justifyright',
+                    'justifyfull', 'insertorderedlist', 'insertunorderedlist', 'indent', 'outdent', 'subscript',
+                    'superscript', 'clearhtml', 'quickformat', 'selectall', '|', 'fullscreen', '/',
+                    'formatblock', 'fontname', 'fontsize', '|', 'forecolor', 'hilitecolor', 'bold',
+                    'italic', 'underline', 'strikethrough', 'lineheight', 'removeformat', '|', 'image', 'multiimage',
+                    'flash', 'media', 'insertfile', 'table', 'hr', 'emoticons', 'baidumap', 'pagebreak',
+                    'anchor', 'link', 'unlink', '|', 'about'
+                ],
+                uploadJson: "/uploadFile/",
+                extraFileUploadParams: {
+                    csrfmiddlewaretoken: $("[name='csrfmiddlewaretoken']").val()
+                }
+            });
+
+        });
+        //Ajax 提交文章
+        $("#btn").click(function () {
+            $.ajax({
+                url: '/blog/backend/addArticle/',
+                type: 'post',
+                data: {
+                    csrfmiddlewaretoken: $("[name='csrfmiddlewaretoken']").val(),
+                    title: $("#id_title").val(),
+                    content: editor.html()
+                },
+                success: function (data) {
+                    $(".has-error").each(function () {
+                        $(this).html("")
+                    });
+                    if (!data["is_login"]) {
+                        $.session.set('refer', '{{ request.path }}');
+                        location.href = "/index/"
+                    } else if (!data.errorList) {
+                        location.href = "/blog/backendIndex/"
+                    }
+                    else {
+                        $.each(data.errorList, function (i, j) {
+                            console.log("i=" + i, "j=" + j);
+                            console.log($("#id_" + i).next());
+                            $("#id_" + i).next().html(j[0]).addClass("pull-right has-error").css("color", "red");
+
+                        })
+                    }
+                }
+            });
+        });
+        {#        content: $(".ke-edit-iframe").contents().find("body").html()#}
+        {#        })#}
+
+    </script>
+
+
+{% endblock %}

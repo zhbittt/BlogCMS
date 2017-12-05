@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="/static/js/jquery-3.1.1.js"></script>
+
+    <script src="/static/dist/js/bootstrap.js"></script>
+    <link rel="stylesheet" href="/static/dist/css/bootstrap.css">
+    <link rel="stylesheet" href="/static/css/backendIndex.css">
+    <script src="/static/js/jquery.js"></script>
+    <script src="/static/kindeditor/kindeditor-all.js"></script>
+</head>
+<body>
+<div class="head">
+    <span>{{ request.user.username }}&nbsp;的个人博客</span>
+    <a href="/index/"><span>首页</span></a>
+</div>
+<div class="container">
+    <div class="col-md-3 leftMenu">
+        <ul class="nav nav-pills nav-stacked">
+            <li role="presentation" class="active"><a href="/blog/backendIndex/">后台管理首页</a></li>
+            <li role="presentation"><a href="/blog/backendIndex/">文章管理</a></li>
+            <li role="presentation"><a href="#">标签管理</a></li>
+            <li role="presentation"><a href="#">分类管理</a></li>
+        </ul>
+
+    </div>
+    <div class="col-sm-8 leftMenu">
+        <ul class="nav nav-pills">
+            <li role="presentation" class="active"><a href="#">随笔</a></li>
+            <li role="presentation" class=""><a href="#">文章</a></li>
+            <li role="presentation" class=""><a href="#">日记</a></li>
+        </ul>
+
+        {% block manageCon %}
+            <div class="manageCon">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <a href="/blog/backend/addArticle/"><button type="button" class="btn btn-success" id="addArticle">添加文章</button></a>
+                    </div>
+                    <div class="panel-body">
+                        <table class="table table-bordered table-hover">
+                            <tr>
+                                <th>标题</th>
+                                <th>评论数</th>
+                                <th>点赞数</th>
+                                <th>操作</th>
+                                <th>操作</th>
+                            </tr>
+                            {% for article in article_list %}
+                                <tr>
+                                    <td>{{ article.title }}</td>
+                                    <td>{{ article.comment_count }}</td>
+                                    <td>{{ article.up_count }}</td>
+                                    <td><a href="">
+                                        <button class="btn btn-info">编辑</button>
+                                    </a></td>
+                                    <td><a href="">
+                                        <button class="btn btn-danger">删除</button>
+                                    </a></td>
+                                </tr>
+                            {% endfor %}
+
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+
+        {% endblock %}
+    </div>
+</div>
+
+</body>
+</html>

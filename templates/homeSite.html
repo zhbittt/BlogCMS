@@ -1,0 +1,114 @@
+{% load  my_tag %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="/static/dist/css/bootstrap.css">
+    <link rel="stylesheet" href="/static/css/homeSite.css">
+    <script src="/static/js/jquery-3.1.1.js"></script>
+    <script src="/static/js/jquery.cookie.js"></script>
+    <script src="/static/js/jquery.session.js"></script>
+    {% block CssJs %}
+
+    {% endblock %}
+</head>
+<body>
+<div class="head">
+    <span>{{ user_obj.nickname }}&nbsp;的个人博客</span>
+
+    <div class="pull-right">
+
+    </div>
+    <a href="/index/"><span>首页</span></a>
+    <a href="/blog/backendIndex/"><span>管理</span></a>
+    <a href="/turn/"><span>turn</span></a>
+</div>
+
+<div class="container mtop">
+    <div class="col-md-3">
+        <div class="panel panel-info">
+            <div class="panel-heading">
+                <h3 class="panel-title">个人信息</h3>
+            </div>
+            <div class="panel-body" id="self_info">
+                <div class="self_head "><img src="/media/{{ user_obj.avatar }}/" alt="头像"></div>
+                <div class="self_nickname"><span>昵称：{{ user_obj.nickname }}</span></div>
+                <div class="self_follow"><span>关注：32</span></div>
+                <div class="self_fans"><span>粉丝：101</span></div>
+                <div class="self_fans"><span>园龄：{{ user_obj.create_time|yuanling }}</span></div>
+            </div>
+        </div>
+
+        <div class="panel panel-info">
+            <div class="panel-heading">
+                <h3 class="panel-title">分类归档</h3>
+            </div>
+            <div class="panel-body">
+                <ul class="list-group">
+                    {% for category in category_list %}
+                        <a href="/blog/{{ user_obj.nickname }}/category/{{ category.0 }}/">
+                            <li class="list-group-item">{{ category.0 }}<span class="badge">{{ category.1 }}</span></li>
+                        </a>
+                    {% endfor %}
+                </ul>
+
+            </div>
+        </div>
+
+        <div class="panel panel-info">
+            <div class="panel-heading">
+                <h3 class="panel-title">标签归档</h3>
+            </div>
+            <div class="panel-body">
+                <ul class="list-group">
+                    {% for tag in tag_list %}
+                        <a href="/blog/{{ user_obj.nickname }}/tag/{{ tag.0 }}/">
+                            <li class="list-group-item">{{ tag.0 }}<span class="badge">{{ tag.1 }}</span></li>
+                        </a>
+                    {% endfor %}
+                </ul>
+
+            </div>
+        </div>
+
+        <div class="panel panel-info">
+            <div class="panel-heading">
+                <h3 class="panel-title">时间归档</h3>
+            </div>
+            <div class="panel-body">
+                <ul class="list-group">
+                    {% for data in data_list %}
+                        <a href="/blog/{{ user_obj.nickname }}/archive/{{ data.0 }}/">
+                            <li class="list-group-item">{{ data.0 }}<span class="badge">{{ data.1 }}</span></li>
+                        </a>
+                    {% endfor %}
+                </ul>
+
+
+            </div>
+        </div>
+    </div>
+    <div class="col-md-8">
+        {% block content %}
+            <div class="list-group">
+            <p class="list-group-item active">{{ user_obj.nickname }}的文章</p>
+        </div>
+            {% for article in article_list %}
+            <div class="media">
+                <h4 class="media-heading"><a href="/blog/{{ user_obj.nickname }}/articles/{{ article.nid }}/">{{ article.title }}</a></h4>
+                <div class="media-body">{{ article.desc }}</div>
+                <div class="media-bottom">
+                    <span>发表于&nbsp;{{ article.create_time|date:"Y-m-d" }}</span>
+                    <span>&nbsp;&nbsp;评论&nbsp;({{ article.comment_count }})</span>
+                    <span>&nbsp;&nbsp;点赞&nbsp;({{ article.up_count }})</span>
+                    <span>&nbsp;&nbsp;阅读&nbsp;({{ article.read_count }})</span>
+                </div>
+            </div>
+        {% endfor %}
+        {% endblock %}
+    </div>
+</div>
+
+</body>
+</html>

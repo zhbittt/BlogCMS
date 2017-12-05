@@ -1,0 +1,289 @@
+{% extends 'homeSite.html' %}
+{% block CssJs %}
+    {#    <link href="/static/summernote/dist/summernote.css" rel="stylesheet"/>#}
+    <script src="/static/js/jquery.min.js"></script>
+    <script src="/static/dist/js/bootstrap.js"></script>
+    {#    <script src="/static/summernote/dist/summernote.js"></script>#}
+    {#    <script src="/static/summernote/dist/lang/summernote-zh-CN.js"></script>    <!-- 中文-->#}
+
+    <script src="/static/js/jquery.session.js"></script>
+    <link rel="stylesheet" href="/static/css/article_content.css">
+
+    <script src="/static/kindeditor/kindeditor-all.js"></script>
+{% endblock %}
+{% block content %}
+
+    <div class="list-group article_title">
+        <p class="list-group-item active text-center">{{ articledetail.article.title }}</p>
+    </div>
+    <div class="article_content ">
+        <p class="col-sm-offset-0">{{ articledetail.content|safe }}</p>
+    </div>
+
+    <div class="poll">
+        <div class="user_info">
+            <div class="user_img pull-left">
+                <a href="/blog/{{ user_obj.username }}"><img src="/media/{{ user_obj.avatar }}" alt=""></a>
+            </div>
+            <div class="user_content pull-left">
+                <div>昵称：{{ user_obj.username }}</div>
+                <div>关注：32</div>
+                <div>粉丝：101</div>
+            </div>
+
+        </div>
+
+        <div class="buryit pull-right" onclick="votePost('buryit')">
+            <span class="burynum" id="bury_count">{{ articledetail.article.down_count }}</span>
+        </div>
+        <div class="diggit pull-right" onclick="votePost('diggit')">
+            <span class="diggnum" id="digg_count">{{ articledetail.article.up_count }}</span>
+        </div>
+
+        <div class="text-right " id="poll_text"></div>
+    </div>
+
+    <p class="comment">
+    <ul class="nav nav-tabs">
+        <li role="presentation" class="active"><a href="#">查看评论</a></li>
+    </ul>
+
+    <div class="comment_tree_list">
+
+    </div>
+
+    <!--
+        <div class="comment_list">
+
+            {% for comment in comment_list %}
+                <div class="media">
+                    <div class="media-left ">
+                        <a href="/blog/{{ comment.user.username }}/">
+                            <img class="media-object" src="{{ comment.user.avatar.url }}" width="30" height="30"
+                                 alt="...">
+                        </a>
+                    </div>
+                    <div class="media-body">
+                        <div class="media-heading">
+                            <span>#{{ comment.nid }}楼</span>
+                            <span>&nbsp;&nbsp;{{ comment.comment_data|date:"Y-m-d H:i" }}</span>
+                            <a href="/blog/{{ comment.user.username }}/"><span>&nbsp;&nbsp;{{ comment.user.username }}</span></a>
+                            <a class="reply_comment_btn pull-right" comment_id="{{ comment.nid }}"
+                               conmment_username="{{ comment.user.username }}">回复</a>
+                        </div>
+                        <div class="content_box">
+                            <div class="c_content">
+                                {{ comment.content }}
+                            </div>
+                            <div class="comment_vote">
+                                <a href="" class="comment_digg">支持(0)</a>
+                                <a href="" class="comment_bury">反对(0)</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+
+        </div>
+-->
+
+    <div class="comment_title ">发表评论</div>
+    <div class="form-inline">
+        <label for="tbCommentAuthor ">昵称：</label>
+        <input type="text" id="tbCommentAuthor" class="author form-control" disabled="disabled" size="50"
+               value="{{ request.user.username }}">
+    </div>
+    <label for="" class="comment_file">评论内容：</label>
+    {#        <div class="m">#}
+    {#            <div class="summernote"></div>#}
+    {#        </div>#}
+    <form action="">
+        {% csrf_token %}
+        <textarea name="" id="comment_con"></textarea>
+
+        <button type="button" class="btn btn-default" id="comment_btn">提交评论</button>
+    </form>
+
+    </div>
+    <script>
+        //点赞
+        function votePost(vote) {
+            $.ajax({
+                url: "/blog/poll/",
+                type: "POST",
+                data: {
+                    "user_id": "{{ request.user.nid }}",
+                    "article_id": "{{ articledetail.article.nid }}",
+                    "csrfmiddlewaretoken": $("[name='csrfmiddlewaretoken']").val(),
+                    "vote": vote
+                },
+                success: function (data) {
+                    JSON.stringify()
+                    var response = JSON.parse(data);
+                    if (!response["is_login"]) {
+                        $.session.set('refer', '{{ request.path }}');
+                        location.href = "/login/"
+                    } else if (response["is_repeat"]) {
+                        $("#poll_text").text("已经点过赞了");
+                        setTimeout('$("#poll_text").text("")', 3000);
+                    } else {
+                        if (vote == "diggit") {
+                            $("#digg_count").text(Number($("#digg_count").text()) + 1);
+                        } else {
+                            $("#bury_count").text(Number($("#bury_count").text()) + 1);
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+    <!--  <script>
+          //输入框插件
+          $(function () {
+              $('.summernote').summernote({
+                  height: 200,
+                  tabsize: 2,
+                  lang: 'zh-CN'
+              });
+          });
+      </script>-->
+    <script>
+        //评论
+        $("#comment_btn").click(function () {
+            var content;
+            if (editor.html().charAt(0)!="@"){
+                parent_comment_id=null;
+            }
+            if (parent_comment_id) {
+{#                var index = $("#comment_con").val().indexOf("\n");  // 子评论#}
+{#                content = $("#comment_con").val().slice(index + 1);                #}
+
+                var index =editor.html().indexOf("<");  // 子评论
+                content = editor.html().slice(index + 7);
+            } else {
+{#                content = $("#comment_con").val()#}
+                content = editor.html()
+            }
+            $.ajax({
+                url: "/blog/comment/",
+                type: "POST",
+                data: {
+                    comment_content: content,
+                    csrfmiddlewaretoken: $("[name='csrfmiddlewaretoken']").val(),
+                    user_id: "{{ request.user.nid }}",
+                    article_id: "{{ articledetail.article.nid }}",
+                    parent_comment_id: parent_comment_id
+                },
+                success: function (data) {
+                    if (!data["is_login"]) {
+                        location.href = "/login/"
+                    } else {
+
+                        var s = '<div class="media offset"><div class="media-left "><a href="/blog/{{ request.user.username }}/">' +
+                            '<img class="media-object" src="{{ request.user.avatar.url }}" width="30" height="30" alt="..."></a></div>' +
+                            '<div class="media-body"><div class="media-heading"><span >#' + data["comment_id"] + '楼 </span>' +
+                            '<span >&nbsp;&nbsp;' + data.comment_data.slice(0, 16) + '</span><a href="/blog/{{ request.user.username }}/">' +
+                            '<span>&nbsp;&nbsp;{{ request.user.username }}</span></a><a href="#comment_con" class="reply_comment_btn pull-right"  comment_id="' + data.comment_id +
+                    '" conmment_username="{{ request.user.username }}">回复</a>' +
+                            ' </div><div class="content_box"><div  class="c_content">' + content + '</div>' +
+                            '<div class="comment_vote"><a href="" class="comment_digg">支持(0)</a><a href="" class="comment_bury" ' +
+                            '>反对(0)</a></div></div></div></div>';
+
+                        //$(".comment_list").append(s);
+                        if (parent_comment_id){
+                            $("[comment_id="+parent_comment_id+"]").parent().parent().parent().append(s);
+
+                        }else{
+                             $(".comment_tree_list").append(s);
+                        }
+
+                        editor.html("")
+                    }
+                }
+            })
+
+        });
+        // 实现ajax子评论
+
+        // ==================================================评论楼的回复按钮
+        var parent_comment_id = null;
+        {#        $(".comment_list").on("click", ".reply_comment_btn", function () {#}
+        {#            // 文本框中显示父评论的名字#}
+        {#            var parent_comment_username = $(this).attr("conmment_username");#}
+        {#            $("#comment_con").focus();#}
+        {#            $("#comment_con").val("@" + parent_comment_username + "\n");#}
+        {##}
+        {#            //  获取父评论的comment_id#}
+        {#            parent_comment_id = $(this).attr("comment_id")#}
+        {#        });#}
+        // ==================================================评论树的回复按钮
+        $(".comment_tree_list").on("click", ".reply_comment_btn", function () {
+            // 文本框中显示父评论的名字
+
+            var parent_comment_username = $(this).attr("conmment_username");
+            console.log($(this));
+            console.log($(this).attr("conmment_username"));
+            editor.sync();
+           editor.focus();
+           editor.appendHtml("@" + parent_comment_username + "<br>");
+{#            $("#comment_con").focus();#}
+{#            $("#comment_con").val("@" + parent_comment_username + "\n");#}
+            //  获取父评论的comment_id
+            parent_comment_id = $(this).attr("comment_id")
+        });
+
+        //获取评论数
+
+        $.ajax({
+            url: "/blog/commentTree/{{ articledetail.article.nid }}/",
+            success: function (data) {
+
+                var data = JSON.parse(data);
+                var s = showCommentTree(data);
+                $(".comment_tree_list").append(s);
+            }
+        });
+
+        //展开评论
+        function showCommentTree(comment_list) {
+            var html = "";
+            $.each(comment_list, function (i, comment_dict) {
+
+                var comment_str = '<div class="media offset"><div class="media-left "><a href="/blog/' + comment_dict["user__username"] +
+                    '/"><img class="media-object" src="/media/' + comment_dict["user__avatar"] + '" width="30" height="30" alt="..."></a></div>' +
+                    '<div class="media-body"><div class="media-heading"><span>#' + comment_dict["nid"] + '楼</span><span>&nbsp;&nbsp;' +
+                    comment_dict["comment_data"] + '</span><a href="/blog/' + comment_dict["user__username"] + '/"><span>&nbsp;&nbsp;' +
+                    comment_dict["user__username"] + '</span></a><a class="reply_comment_btn pull-right" comment_id="' + comment_dict["nid"] +
+                    '" conmment_username="' + comment_dict["user__username"] + '">回复</a></div><div class="content_box"><div class="c_content">' + comment_dict["content"] +
+                    '</div><div class="comment_vote"><a href="" class="comment_digg">支持(0)</a><a href="" class="comment_bury">' +
+                    '反对(0)</a></div></div></div>';
+
+                if (comment_dict["children_commentList"]) {
+                    var s = showCommentTree(comment_dict["children_commentList"]);
+                    comment_str += s;
+                }
+                comment_str += "</div>";
+                html += comment_str
+            });
+            return html
+        }
+
+
+        //文本框
+         KindEditor.ready(function (K) {
+            window.editor = K.create("#comment_con", {
+                width: "100px",
+                height: "300px",
+                resizeType: 0,
+                items: [
+                  'bold','italic', 'underline',  '|', 'image', 'link'
+                ],
+                uploadJson: "/uploadFile/",
+                extraFileUploadParams: {
+                    csrfmiddlewaretoken: $("[name='csrfmiddlewaretoken']").val()
+                }
+            });
+        });
+    </script>
+
+{% endblock %}
